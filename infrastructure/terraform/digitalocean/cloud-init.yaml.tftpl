@@ -11,7 +11,6 @@ runcmd:
   - [ bash, -lc, "apt-get install -y docker.io docker-compose-plugin" ]
   - [ bash, -lc, "systemctl enable --now docker" ]
   - [ bash, -lc, "mkdir -p /opt && cd /opt" ]
-  - [ bash, -lc, "if [ -d /opt/hyperswitch ] && [ ! -d /opt/hyperswitch/.git ]; then rm -rf /opt/hyperswitch; fi" ]
-  - [ bash, -lc, "if [ ! -d /opt/hyperswitch ]; then cd /opt && git clone ${hyperswitch_repo}; fi" ]
+  - [ bash, -lc, "if [ -d /opt/hyperswitch ] && [ ! -d /opt/hyperswitch/.git ]; then rm -rf /opt/hyperswitch; fi && if [ ! -d /opt/hyperswitch ]; then cd /opt && git clone ${hyperswitch_repo}; fi" ]
   - [ bash, -lc, "cd /opt/hyperswitch && git fetch --all && git checkout ${hyperswitch_ref}" ]
   - [ bash, -lc, "cd /opt/hyperswitch && docker compose up -d" ]

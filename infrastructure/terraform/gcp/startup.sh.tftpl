@@ -6,11 +6,11 @@ apt-get install -y docker.io docker-compose-plugin git
 systemctl enable --now docker
 
 mkdir -p /opt
-cd /opt
-if [ -d hyperswitch ] && [ ! -d hyperswitch/.git ]; then
-  rm -rf hyperswitch
+if [ -d /opt/hyperswitch ] && [ ! -d /opt/hyperswitch/.git ]; then
+  rm -rf /opt/hyperswitch
 fi
-if [ ! -d hyperswitch ]; then
+if [ ! -d /opt/hyperswitch ]; then
+  cd /opt
   git clone ${hyperswitch_repo}
 fi
 
