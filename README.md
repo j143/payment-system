@@ -2,6 +2,8 @@
 
 Infrastructure lab for experimenting with **Juspay Hyperswitch** and supporting payment stack services.
 
+> ⚠️ **Experiment-only default setup**: Before any production or internet-exposed use, you must replace placeholder/local credentials, configure restricted CIDRs, enable TLS, and set hardened Hyperswitch auth and secrets.
+
 ## What is included
 
 - Local experimental stack via Docker Compose (PostgreSQL + Redis + pgAdmin)
@@ -103,4 +105,8 @@ These generated values are provided for experimentation and extension when you a
 ## 5) Security note
 
 The cloud bootstrap scripts run Hyperswitch with upstream defaults for fast experimentation.
-Before any production or internet-exposed use, provide hardened Hyperswitch configuration and credentials.
+Before any production or internet-exposed use, harden at least:
+- Credentials and API keys (no placeholders/defaults)
+- Inbound CIDRs for SSH and app ports
+- HTTPS/TLS termination and certificate management
+- Hyperswitch authentication, admin access policy, and secret storage
