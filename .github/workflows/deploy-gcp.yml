@@ -26,7 +26,8 @@ env:
   GCP_RESOURCE_PREFIX: ${{ vars.GCP_RESOURCE_PREFIX }}
   GCP_MACHINE_TYPE: ${{ vars.GCP_MACHINE_TYPE }}
   GCP_SSH_USER: ${{ vars.GCP_SSH_USER }}
-  GCP_ALLOWED_CIDRS: ${{ vars.GCP_ALLOWED_CIDRS }}
+  GCP_SSH_ALLOWED_CIDRS: ${{ vars.GCP_SSH_ALLOWED_CIDRS }}
+  GCP_APP_ALLOWED_CIDRS: ${{ vars.GCP_APP_ALLOWED_CIDRS }}
   GCP_SSH_PUBLIC_KEY_VAR: ${{ vars.GCP_SSH_PUBLIC_KEY }}
 
 jobs:
@@ -57,7 +58,8 @@ jobs:
           RESOURCE_PREFIX="${GCP_RESOURCE_PREFIX:-hyperswitch-lab}"
           MACHINE_TYPE="${GCP_MACHINE_TYPE:-e2-medium}"
           SSH_USER="${GCP_SSH_USER:-ubuntu}"
-          ALLOWED_CIDRS="${GCP_ALLOWED_CIDRS:-203.0.113.10/32}"
+          SSH_ALLOWED_CIDRS="${GCP_SSH_ALLOWED_CIDRS:-203.0.113.10/32}"
+          APP_ALLOWED_CIDRS="${GCP_APP_ALLOWED_CIDRS:-203.0.113.10/32}"
           SSH_PUBLIC_KEY="${{ secrets.GCP_SSH_PUBLIC_KEY }}"
           to_hcl_list() {
             local input="$1"
@@ -72,7 +74,8 @@ jobs:
             output="${output%, }"
             echo "[${output}]"
           }
-          ALLOWED_CIDRS_TF="$(to_hcl_list "${ALLOWED_CIDRS}")"
+          SSH_ALLOWED_CIDRS_TF="$(to_hcl_list "${SSH_ALLOWED_CIDRS}")"
+          APP_ALLOWED_CIDRS_TF="$(to_hcl_list "${APP_ALLOWED_CIDRS}")"
           if [ -z "${SSH_PUBLIC_KEY}" ]; then
             SSH_PUBLIC_KEY="${GCP_SSH_PUBLIC_KEY_VAR}"
           fi
@@ -94,7 +97,8 @@ jobs:
           machine_type    = "${MACHINE_TYPE}"
           ssh_user        = "${SSH_USER}"
           ssh_public_key  = "${SSH_PUBLIC_KEY}"
-          allowed_cidrs   = ${ALLOWED_CIDRS_TF}
+          ssh_allowed_cidrs = ${SSH_ALLOWED_CIDRS_TF}
+          app_allowed_cidrs = ${APP_ALLOWED_CIDRS_TF}
           hyperswitch_ref = "${{ inputs.hyperswitch_ref }}"
           EOFVARS
 

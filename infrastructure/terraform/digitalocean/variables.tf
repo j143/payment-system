@@ -50,6 +50,11 @@ variable "outbound_allowed_cidrs" {
   default     = ["0.0.0.0/0"]
 }
 
+variable "app_allowed_cidrs" {
+  type        = list(string)
+  description = "CIDRs allowed to access Hyperswitch app port 8080"
+}
+
 variable "hyperswitch_repo" {
   type        = string
   description = "Hyperswitch git repository"
