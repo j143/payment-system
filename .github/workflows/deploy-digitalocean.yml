@@ -24,6 +24,8 @@ env:
   DEPLOY_ENVIRONMENT: ${{ vars.DEPLOY_ENVIRONMENT }}
   DO_REGION: ${{ vars.DO_REGION }}
   DO_DROPLET_SIZE: ${{ vars.DO_DROPLET_SIZE }}
+  DO_SSH_ALLOWED_CIDRS: ${{ vars.DO_SSH_ALLOWED_CIDRS }}
+  DO_OUTBOUND_ALLOWED_CIDRS: ${{ vars.DO_OUTBOUND_ALLOWED_CIDRS }}
 
 jobs:
   terraform:
@@ -46,6 +48,23 @@ jobs:
           DEPLOY_ENV="${DEPLOY_ENVIRONMENT:-experiment}"
           REGION="${DO_REGION:-sgp1}"
           DROPLET_SIZE="${DO_DROPLET_SIZE:-s-1vcpu-2gb}"
+          SSH_ALLOWED_CIDRS="${DO_SSH_ALLOWED_CIDRS:-203.0.113.10/32}"
+          OUTBOUND_ALLOWED_CIDRS="${DO_OUTBOUND_ALLOWED_CIDRS:-0.0.0.0/0}"
+          to_hcl_list() {
+            local input="$1"
+            local output=""
+            IFS=',' read -ra CIDRS <<< "$input"
+            for cidr in "${CIDRS[@]}"; do
+              cidr="$(echo "$cidr" | xargs)"
+              if [ -n "$cidr" ]; then
+                output="${output}\"${cidr}\", "
+              fi
+            done
+            output="${output%, }"
+            echo "[${output}]"
+          }
+          SSH_ALLOWED_CIDRS_TF="$(to_hcl_list "${SSH_ALLOWED_CIDRS}")"
+          OUTBOUND_ALLOWED_CIDRS_TF="$(to_hcl_list "${OUTBOUND_ALLOWED_CIDRS}")"
 
           cat > terraform.auto.tfvars <<EOFVARS
           digitalocean_token = "${{ secrets.DIGITALOCEAN_TOKEN }}"
@@ -54,6 +73,8 @@ jobs:
           environment        = "${DEPLOY_ENV}"
           region             = "${REGION}"
           droplet_size       = "${DROPLET_SIZE}"
+          ssh_allowed_cidrs  = ${SSH_ALLOWED_CIDRS_TF}
+          outbound_allowed_cidrs = ${OUTBOUND_ALLOWED_CIDRS_TF}
           hyperswitch_ref    = "${{ inputs.hyperswitch_ref }}"
           EOFVARS
 

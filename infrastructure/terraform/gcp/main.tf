@@ -26,8 +26,9 @@ resource "random_string" "suffix" {
 }
 
 resource "random_password" "db_password" {
-  length  = 24
-  special = false
+  length           = 24
+  special          = true
+  override_special = "!@#%^*-_=+"
 }
 
 resource "google_compute_firewall" "hyperswitch" {

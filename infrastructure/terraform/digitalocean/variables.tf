@@ -42,13 +42,12 @@ variable "ssh_public_key" {
 variable "ssh_allowed_cidrs" {
   type        = list(string)
   description = "CIDRs allowed to SSH into the droplet"
-  default     = ["0.0.0.0/0", "::/0"]
 }
 
 variable "outbound_allowed_cidrs" {
   type        = list(string)
   description = "CIDRs allowed for outbound traffic from the droplet"
-  default     = ["0.0.0.0/0", "::/0"]
+  default     = ["0.0.0.0/0"]
 }
 
 variable "hyperswitch_repo" {
