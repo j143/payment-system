@@ -15,6 +15,8 @@ Infrastructure lab for experimenting with **Juspay Hyperswitch** and supporting 
 ## 1) Local experiment stack
 
 ```bash
+cp .env.example .env
+# update .env with strong values
 docker compose up -d
 ```
 
@@ -37,12 +39,17 @@ Terraform path: `infrastructure/terraform/digitalocean`
 - `DIGITALOCEAN_TOKEN`
 - `DO_SSH_PUBLIC_KEY`
 
+### Required GitHub repository variables
+
+- `DO_SSH_ALLOWED_CIDRS` (comma-separated CIDRs, example: `203.0.113.10/32`)
+
 ### Optional GitHub repository variables
 
 - `DO_PROJECT_NAME` (default: `hyperswitch-lab`)
 - `DEPLOY_ENVIRONMENT` (default: `experiment`)
 - `DO_REGION` (default: `sgp1`)
 - `DO_DROPLET_SIZE` (default: `s-1vcpu-2gb`)
+- `DO_OUTBOUND_ALLOWED_CIDRS` (default: `0.0.0.0/0`)
 
 ### Run workflow
 
@@ -59,11 +66,12 @@ Terraform path: `infrastructure/terraform/gcp`
 ### Required GitHub repository secrets
 
 - `GCP_CREDENTIALS_JSON` (service account JSON with compute permissions)
-- `GCP_SSH_PUBLIC_KEY`
+- `GCP_SSH_PUBLIC_KEY` (secret recommended; variable fallback supported)
 
 ### Required GitHub repository variables
 
 - `GCP_PROJECT_ID`
+- `GCP_ALLOWED_CIDRS` (comma-separated CIDRs, example: `203.0.113.10/32`)
 
 ### Optional GitHub repository variables
 

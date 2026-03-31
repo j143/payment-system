@@ -26,6 +26,8 @@ env:
   GCP_RESOURCE_PREFIX: ${{ vars.GCP_RESOURCE_PREFIX }}
   GCP_MACHINE_TYPE: ${{ vars.GCP_MACHINE_TYPE }}
   GCP_SSH_USER: ${{ vars.GCP_SSH_USER }}
+  GCP_ALLOWED_CIDRS: ${{ vars.GCP_ALLOWED_CIDRS }}
+  GCP_SSH_PUBLIC_KEY_VAR: ${{ vars.GCP_SSH_PUBLIC_KEY }}
 
 jobs:
   terraform:
@@ -55,9 +57,32 @@ jobs:
           RESOURCE_PREFIX="${GCP_RESOURCE_PREFIX:-hyperswitch-lab}"
           MACHINE_TYPE="${GCP_MACHINE_TYPE:-e2-medium}"
           SSH_USER="${GCP_SSH_USER:-ubuntu}"
+          ALLOWED_CIDRS="${GCP_ALLOWED_CIDRS:-203.0.113.10/32}"
+          SSH_PUBLIC_KEY="${{ secrets.GCP_SSH_PUBLIC_KEY }}"
+          to_hcl_list() {
+            local input="$1"
+            local output=""
+            IFS=',' read -ra CIDRS <<< "$input"
+            for cidr in "${CIDRS[@]}"; do
+              cidr="$(echo "$cidr" | xargs)"
+              if [ -n "$cidr" ]; then
+                output="${output}\"${cidr}\", "
+              fi
+            done
+            output="${output%, }"
+            echo "[${output}]"
+          }
+          ALLOWED_CIDRS_TF="$(to_hcl_list "${ALLOWED_CIDRS}")"
+          if [ -z "${SSH_PUBLIC_KEY}" ]; then
+            SSH_PUBLIC_KEY="${GCP_SSH_PUBLIC_KEY_VAR}"
+          fi
 
           if [ -z "${PROJECT_ID}" ]; then
             echo "GCP_PROJECT_ID repository variable is required."
+            exit 1
+          fi
+          if [ -z "${SSH_PUBLIC_KEY}" ]; then
+            echo "Set GCP_SSH_PUBLIC_KEY (secret or variable)."
             exit 1
           fi
 
@@ -68,7 +93,8 @@ jobs:
           resource_prefix = "${RESOURCE_PREFIX}"
           machine_type    = "${MACHINE_TYPE}"
           ssh_user        = "${SSH_USER}"
-          ssh_public_key  = "${{ secrets.GCP_SSH_PUBLIC_KEY }}"
+          ssh_public_key  = "${SSH_PUBLIC_KEY}"
+          allowed_cidrs   = ${ALLOWED_CIDRS_TF}
           hyperswitch_ref = "${{ inputs.hyperswitch_ref }}"
           EOFVARS
 
