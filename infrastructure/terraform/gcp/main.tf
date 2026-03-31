@@ -73,7 +73,4 @@ resource "google_compute_instance" "hyperswitch" {
     hyperswitch_ref  = var.hyperswitch_ref
   })
 
-  service_account {
-    scopes = ["cloud-platform"]
-  }
 }

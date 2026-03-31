@@ -81,12 +81,12 @@ resource "digitalocean_firewall" "hyperswitch" {
   outbound_rule {
     protocol              = "tcp"
     port_range            = "1-65535"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
+    destination_addresses = var.outbound_allowed_cidrs
   }
 
   outbound_rule {
     protocol              = "udp"
     port_range            = "1-65535"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
+    destination_addresses = var.outbound_allowed_cidrs
   }
 }

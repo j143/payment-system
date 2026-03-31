@@ -30,7 +30,7 @@ This starts:
 
 ## 2) DigitalOcean deployment
 
-Terraform path: `/home/runner/work/payment-system/payment-system/infrastructure/terraform/digitalocean`
+Terraform path: `infrastructure/terraform/digitalocean`
 
 ### Required GitHub repository secrets
 
@@ -54,7 +54,7 @@ Terraform path: `/home/runner/work/payment-system/payment-system/infrastructure/
 
 ## 3) GCP deployment
 
-Terraform path: `/home/runner/work/payment-system/payment-system/infrastructure/terraform/gcp`
+Terraform path: `infrastructure/terraform/gcp`
 
 ### Required GitHub repository secrets
 
