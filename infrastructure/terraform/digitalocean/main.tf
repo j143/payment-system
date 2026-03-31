@@ -75,7 +75,7 @@ resource "digitalocean_firewall" "hyperswitch" {
   inbound_rule {
     protocol         = "tcp"
     port_range       = "8080"
-    source_addresses = ["0.0.0.0/0", "::/0"]
+    source_addresses = var.app_allowed_cidrs
   }
 
   outbound_rule {

@@ -37,10 +37,23 @@ resource "google_compute_firewall" "hyperswitch" {
 
   allow {
     protocol = "tcp"
-    ports    = ["22", "80", "443", "8080"]
+    ports    = ["22"]
   }
 
-  source_ranges = var.allowed_cidrs
+  source_ranges = var.ssh_allowed_cidrs
+  target_tags   = ["hyperswitch"]
+}
+
+resource "google_compute_firewall" "hyperswitch_app" {
+  name    = "${var.resource_prefix}-app-fw-${random_string.suffix.result}"
+  network = var.network
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "443", "8080"]
+  }
+
+  source_ranges = var.app_allowed_cidrs
   target_tags   = ["hyperswitch"]
 }
 

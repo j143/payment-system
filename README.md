@@ -16,7 +16,7 @@ Infrastructure lab for experimenting with **Juspay Hyperswitch** and supporting 
 
 ```bash
 cp .env.example .env
-# update .env with strong values
+# update .env with strong values (required)
 docker compose up -d
 ```
 
@@ -42,6 +42,7 @@ Terraform path: `infrastructure/terraform/digitalocean`
 ### Required GitHub repository variables
 
 - `DO_SSH_ALLOWED_CIDRS` (comma-separated CIDRs, example: `203.0.113.10/32`)
+- `DO_APP_ALLOWED_CIDRS` (comma-separated CIDRs for port 8080 access)
 
 ### Optional GitHub repository variables
 
@@ -71,7 +72,8 @@ Terraform path: `infrastructure/terraform/gcp`
 ### Required GitHub repository variables
 
 - `GCP_PROJECT_ID`
-- `GCP_ALLOWED_CIDRS` (comma-separated CIDRs, example: `203.0.113.10/32`)
+- `GCP_SSH_ALLOWED_CIDRS` (comma-separated CIDRs for SSH)
+- `GCP_APP_ALLOWED_CIDRS` (comma-separated CIDRs for app ports 80/443/8080)
 
 ### Optional GitHub repository variables
 
@@ -97,3 +99,8 @@ Both Terraform stacks generate:
 - Random database password (`generated_db_password` Terraform output, marked sensitive)
 
 These generated values are provided for experimentation and extension when you add managed DB/services later.
+
+## 5) Security note
+
+The cloud bootstrap scripts run Hyperswitch with upstream defaults for fast experimentation.
+Before any production or internet-exposed use, provide hardened Hyperswitch configuration and credentials.

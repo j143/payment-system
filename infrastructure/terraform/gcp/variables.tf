@@ -45,9 +45,14 @@ variable "network" {
   default     = "default"
 }
 
-variable "allowed_cidrs" {
+variable "ssh_allowed_cidrs" {
   type        = list(string)
-  description = "CIDRs allowed to access exposed ports"
+  description = "CIDRs allowed for SSH access"
+}
+
+variable "app_allowed_cidrs" {
+  type        = list(string)
+  description = "CIDRs allowed to access application ports"
 }
 
 variable "ssh_user" {
