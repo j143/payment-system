@@ -7,6 +7,9 @@ systemctl enable --now docker
 
 mkdir -p /opt
 cd /opt
+if [ -d hyperswitch ] && [ ! -d hyperswitch/.git ]; then
+  rm -rf hyperswitch
+fi
 if [ ! -d hyperswitch ]; then
   git clone ${hyperswitch_repo}
 fi

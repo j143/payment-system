@@ -24,9 +24,8 @@ resource "random_string" "suffix" {
 }
 
 resource "random_password" "db_password" {
-  length           = 24
-  special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  length  = 24
+  special = false
 }
 
 resource "digitalocean_ssh_key" "default" {
