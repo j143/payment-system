@@ -1,0 +1,95 @@
+name: Deploy Hyperswitch to GCP
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Terraform action"
+        required: true
+        default: "plan"
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+      hyperswitch_ref:
+        description: "Git ref for Juspay Hyperswitch"
+        required: true
+        default: "main"
+
+env:
+  TF_IN_AUTOMATION: true
+  TF_INPUT: false
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_REGION: ${{ vars.GCP_REGION }}
+  GCP_ZONE: ${{ vars.GCP_ZONE }}
+  GCP_RESOURCE_PREFIX: ${{ vars.GCP_RESOURCE_PREFIX }}
+  GCP_MACHINE_TYPE: ${{ vars.GCP_MACHINE_TYPE }}
+  GCP_SSH_USER: ${{ vars.GCP_SSH_USER }}
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: infrastructure/terraform/gcp
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS_JSON }}'
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Prepare Terraform variables
+        run: |
+          PROJECT_ID="${GCP_PROJECT_ID}"
+          REGION="${GCP_REGION:-asia-southeast1}"
+          ZONE="${GCP_ZONE:-asia-southeast1-b}"
+          RESOURCE_PREFIX="${GCP_RESOURCE_PREFIX:-hyperswitch-lab}"
+          MACHINE_TYPE="${GCP_MACHINE_TYPE:-e2-medium}"
+          SSH_USER="${GCP_SSH_USER:-ubuntu}"
+
+          if [ -z "${PROJECT_ID}" ]; then
+            echo "GCP_PROJECT_ID repository variable is required."
+            exit 1
+          fi
+
+          cat > terraform.auto.tfvars <<EOFVARS
+          project_id      = "${PROJECT_ID}"
+          region          = "${REGION}"
+          zone            = "${ZONE}"
+          resource_prefix = "${RESOURCE_PREFIX}"
+          machine_type    = "${MACHINE_TYPE}"
+          ssh_user        = "${SSH_USER}"
+          ssh_public_key  = "${{ secrets.GCP_SSH_PUBLIC_KEY }}"
+          hyperswitch_ref = "${{ inputs.hyperswitch_ref }}"
+          EOFVARS
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        if: inputs.action == 'plan' || inputs.action == 'apply'
+        run: terraform plan -out tfplan
+
+      - name: Terraform Apply
+        if: inputs.action == 'apply'
+        run: terraform apply -auto-approve tfplan
+
+      - name: Terraform Destroy
+        if: inputs.action == 'destroy'
+        run: terraform destroy -auto-approve
+
+      - name: Terraform Outputs
+        if: inputs.action == 'apply'
+        run: terraform output

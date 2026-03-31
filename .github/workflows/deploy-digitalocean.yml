@@ -1,0 +1,80 @@
+name: Deploy Hyperswitch to DigitalOcean
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Terraform action"
+        required: true
+        default: "plan"
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+      hyperswitch_ref:
+        description: "Git ref for Juspay Hyperswitch"
+        required: true
+        default: "main"
+
+env:
+  TF_IN_AUTOMATION: true
+  TF_INPUT: false
+  DO_PROJECT_NAME: ${{ vars.DO_PROJECT_NAME }}
+  DEPLOY_ENVIRONMENT: ${{ vars.DEPLOY_ENVIRONMENT }}
+  DO_REGION: ${{ vars.DO_REGION }}
+  DO_DROPLET_SIZE: ${{ vars.DO_DROPLET_SIZE }}
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: infrastructure/terraform/digitalocean
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Prepare Terraform variables
+        run: |
+          PROJECT_NAME="${DO_PROJECT_NAME:-hyperswitch-lab}"
+          DEPLOY_ENV="${DEPLOY_ENVIRONMENT:-experiment}"
+          REGION="${DO_REGION:-sgp1}"
+          DROPLET_SIZE="${DO_DROPLET_SIZE:-s-1vcpu-2gb}"
+
+          cat > terraform.auto.tfvars <<EOFVARS
+          digitalocean_token = "${{ secrets.DIGITALOCEAN_TOKEN }}"
+          ssh_public_key     = "${{ secrets.DO_SSH_PUBLIC_KEY }}"
+          project_name       = "${PROJECT_NAME}"
+          environment        = "${DEPLOY_ENV}"
+          region             = "${REGION}"
+          droplet_size       = "${DROPLET_SIZE}"
+          hyperswitch_ref    = "${{ inputs.hyperswitch_ref }}"
+          EOFVARS
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        if: inputs.action == 'plan' || inputs.action == 'apply'
+        run: terraform plan -out tfplan
+
+      - name: Terraform Apply
+        if: inputs.action == 'apply'
+        run: terraform apply -auto-approve tfplan
+
+      - name: Terraform Destroy
+        if: inputs.action == 'destroy'
+        run: terraform destroy -auto-approve
+
+      - name: Terraform Outputs
+        if: inputs.action == 'apply'
+        run: terraform output
