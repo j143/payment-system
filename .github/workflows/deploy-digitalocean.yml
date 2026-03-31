@@ -17,6 +17,9 @@ on:
         required: true
         default: "main"
 
+permissions:
+  contents: read
+
 env:
   TF_IN_AUTOMATION: true
   TF_INPUT: false
