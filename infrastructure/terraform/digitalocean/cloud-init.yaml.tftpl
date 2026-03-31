@@ -1,0 +1,16 @@
+#cloud-config
+package_update: true
+packages:
+  - ca-certificates
+  - curl
+  - git
+  - gnupg
+  - lsb-release
+
+runcmd:
+  - [ bash, -lc, "apt-get update" ]
+  - [ bash, -lc, "apt-get install -y docker.io docker-compose-plugin" ]
+  - [ bash, -lc, "systemctl enable --now docker" ]
+  - [ bash, -lc, "mkdir -p /opt && cd /opt && if [ ! -d hyperswitch ]; then git clone ${hyperswitch_repo}; fi" ]
+  - [ bash, -lc, "cd /opt/hyperswitch && git fetch --all && git checkout ${hyperswitch_ref}" ]
+  - [ bash, -lc, "cd /opt/hyperswitch && docker compose up -d" ]

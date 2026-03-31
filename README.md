@@ -1,46 +1,91 @@
 # payment-system
 
-deploy a payment system based on open source stack
+Infrastructure lab for experimenting with **Juspay Hyperswitch** and supporting payment stack services.
 
+## What is included
 
+- Local experimental stack via Docker Compose (PostgreSQL + Redis + pgAdmin)
+- Terraform for **DigitalOcean** deployment
+- Terraform for **Google Cloud Platform** deployment
+- GitHub Actions `workflow_dispatch` pipelines for plan/apply/destroy on both clouds
+- Generated defaults for missing values (randomized resource suffixes + generated DB password output)
 
-# Juspay Hyperswitch on DigitalOcean
+---
 
-I've successfully set up the infrastructure for deploying Juspay Hyperswitch on DigitalOcean. Here's what has been completed: [cloud.digitalocean](https://cloud.digitalocean.com/droplets?i=aefb8e&preserveScrollPosition=false)
+## 1) Local experiment stack
 
-## Infrastructure Setup ✓
-
-**Droplet Created:**
-- Name: hyperswitch-server
-- IP Address: ip
-- Configuration: 2 GB RAM / 1 CPU / 50 GB SSD
-- Location: Singapore (SGP1)
-- OS: Ubuntu 22.04 with Docker pre-installed
-- Status: Active and running
-
-**Root Password:** redacted
-
-## Deployment Approach
-
-Based on my research, Hyperswitch can be deployed using Docker with the following components: [docs.hyperswitch](https://docs.hyperswitch.io/about-hyperswitch/payments-modules/intelligent-routing/self-deployment-guide)
-- Application server
-- PostgreSQL database  
-- Redis cache
-
-The recommended setup uses approximately 2GB of disk space and requires running:
 ```bash
-git clone https://github.com/juspay/hyperswitch.git
-cd hyperswitch
 docker compose up -d
 ```
 
-## Next Steps to Complete Deployment
+This starts:
 
-1. **SSH into the droplet** using: `ssh root@ip`
-2. **Clone Hyperswitch repository**: `git clone https://github.com/juspay/hyperswitch.git`
-3. **Navigate to directory**: `cd hyperswitch`
-4. **Run Docker setup**: `docker compose up -d`
-5. **Access the server** at `http://ip:8080` (default port)
+- PostgreSQL on `5432`
+- Redis on `6379`
+- pgAdmin on `5050`
 
-The droplet is now ready with Docker pre-installed, and you can SSH into it to complete the Hyperswitch deployment. The web console is currently initializing, but you can also access it directly via SSH terminal from your local machine using the IP address and root password provided above.
+> Hyperswitch itself is deployed on cloud instances through Terraform startup scripts that clone and run the official `juspay/hyperswitch` repository.
 
+---
+
+## 2) DigitalOcean deployment
+
+Terraform path: `/home/runner/work/payment-system/payment-system/infrastructure/terraform/digitalocean`
+
+### Required GitHub repository secrets
+
+- `DIGITALOCEAN_TOKEN`
+- `DO_SSH_PUBLIC_KEY`
+
+### Optional GitHub repository variables
+
+- `DO_PROJECT_NAME` (default: `hyperswitch-lab`)
+- `DEPLOY_ENVIRONMENT` (default: `experiment`)
+- `DO_REGION` (default: `sgp1`)
+- `DO_DROPLET_SIZE` (default: `s-1vcpu-2gb`)
+
+### Run workflow
+
+- Go to **Actions** → **Deploy Hyperswitch to DigitalOcean**
+- Click **Run workflow**
+- Choose `plan`, `apply`, or `destroy`
+
+---
+
+## 3) GCP deployment
+
+Terraform path: `/home/runner/work/payment-system/payment-system/infrastructure/terraform/gcp`
+
+### Required GitHub repository secrets
+
+- `GCP_CREDENTIALS_JSON` (service account JSON with compute permissions)
+- `GCP_SSH_PUBLIC_KEY`
+
+### Required GitHub repository variables
+
+- `GCP_PROJECT_ID`
+
+### Optional GitHub repository variables
+
+- `GCP_REGION` (default: `asia-southeast1`)
+- `GCP_ZONE` (default: `asia-southeast1-b`)
+- `GCP_RESOURCE_PREFIX` (default: `hyperswitch-lab`)
+- `GCP_MACHINE_TYPE` (default: `e2-medium`)
+- `GCP_SSH_USER` (default: `ubuntu`)
+
+### Run workflow
+
+- Go to **Actions** → **Deploy Hyperswitch to GCP**
+- Click **Run workflow**
+- Choose `plan`, `apply`, or `destroy`
+
+---
+
+## 4) Notes on generated values
+
+Both Terraform stacks generate:
+
+- Random 4-char suffix for resource names
+- Random database password (`generated_db_password` Terraform output, marked sensitive)
+
+These generated values are provided for experimentation and extension when you add managed DB/services later.

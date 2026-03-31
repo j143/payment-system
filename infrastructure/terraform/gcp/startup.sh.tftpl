@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+
+apt-get update
+apt-get install -y docker.io docker-compose-plugin git
+systemctl enable --now docker
+
+mkdir -p /opt
+cd /opt
+if [ ! -d hyperswitch ]; then
+  git clone ${hyperswitch_repo}
+fi
+
+cd /opt/hyperswitch
+git fetch --all
+git checkout ${hyperswitch_ref}
+docker compose up -d
